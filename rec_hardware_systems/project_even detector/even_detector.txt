@@ -1,0 +1,223 @@
+----------------------------------------------------------------------------------
+################################### Question 1 ###################################
+----------------------------------------------------------------------------------
+
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+
+--δηλωση οντοτητας 
+entity even_detector1 is
+   port(
+      a: in std_logic_vector(2 downto 0);--δηλωση εισοδου α, 3 bit
+      even: out std_logic--δηλωση εξοδου even
+   );
+end even_detector1;
+
+
+--δηλωση αρχιτεκτονικης
+ architecture det_arch of even_detector1 is
+   signal p1, p2, p3, p4 : std_logic;;--δηλωση ενδιαμεσου σηματος 
+begin
+   even <= (p1 or p2) or (p3 or p4) ;--εξοδος even των σηματων p1,p2,p3,p4 
+   p1 <= (not a(2)) and (not a(1)) and (not a(0)) ;--σημα p1
+   p2 <= (not a(2)) and a(1) and a(0) ;--σημα p2
+   p3 <= a(2) and (not a(1)) and a(0);--σημα p3
+   p4 <= a(2) and a(1) and (not a(0));--σημα p4
+end det_arch ;
+
+
+
+
+
+----------------------------------------------------------------------------------
+################################### Test_Bench ###################################
+----------------------------------------------------------------------------------
+
+
+
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity even_detector_testbench is
+end even_detector_testbench;
+
+architecture tb_arch of even_detector_testbench is--δηλωση αρχιτεκτονικης
+
+   component even_detector1--δηλωσεις εισοδων και εξοδων για τα συστατικα της συνθεσης
+      port(
+         a: in std_logic_vector(2 downto 0);--δηλωση εισοδου α, 3 bit
+         even: out std_logic--δηλωση εξοδου even
+      );
+   end component;
+   
+   signal input: std_logic_vector(2 downto 0);--δηλωση τυπικου λογικου σηματος a, 3 bit
+   signal output: std_logic;--δηλωση τυπικου λογικου σηματος εξοδου "even" 
+
+begin
+       -- port map για τα a και even 
+   uut: even_detector1
+      port map( a=>input, even=>output);
+   
+       --εναρξη διεργασιας διανυσματων δοκιμης
+   process
+   begin
+      input <= "000";
+      wait for 100 ns;
+      input <= "001";
+      wait for 100 ns;
+      input <= "010";
+      wait for 100 ns;
+      input<= "011";
+      wait for 100 ns;
+      input<= "100";
+      wait for 100 ns;
+      input <= "101";
+      wait for 100 ns;
+      input<= "110";
+      wait for 100 ns;
+      input <= "111";
+      wait for 100 ns;
+   end process;
+   
+   --εναρξη διεργασιας για τον ελεγχο των αποτελεσματων
+   process
+      variable error_status: boolean;
+   begin
+      wait on input;
+      wait for 100 ns;
+      if ((input="000" and output = '1') or
+          (input="001" and output = '0') or
+          (input="010" and output = '0') or
+          (input="011" and output = '1') or
+          (input="100" and output = '0') or
+          (input="101" and output = '1') or
+          (input="110" and output = '1') or
+          (input="111" and output = '0'))
+      then
+         error_status := false;
+      else
+         error_status := true;
+      end if;
+      -- αναφορα σφαλματων
+      assert not error_status
+         report "test failed."
+         severity note;
+   end process;
+end tb_arch;
+
+
+----------------------------------------------------------------------------------
+################################### Question 2 ###################################
+----------------------------------------------------------------------------------
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity even_detector_xor is--δηλωση οντοτητας
+ port (A : in std_logic_vector(2 downto 0);--δηλωση εισοδου Α, 3 bit
+ even : out std_logic;--δηλωση εξοδου even
+ odd : out std_logic --δηλωση εξοδου odd
+ );
+end even_detector_xor;
+
+--δηλωση αρχιτεκτονικης
+architecture Behavioral of even_detector_xor is
+    signal temp :std_logic ;--ενδιαμεσο σημα
+begin
+    temp <= (A(0) xor A(1)) xor A(2);
+    odd <= temp;
+    even<= not(temp);
+end Behavioral;
+
+----------------------------------------------------------------------------------
+################################### Test_Bench ###################################
+----------------------------------------------------------------------------------
+
+-------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity even_detector_testbench is--δηλωση οντοτητας
+end even_detector_testbench;
+
+--δηλωση αρχιτεκτονικης
+architecture tb_arch of even_detector_testbench is
+   component even_detector_xor--δηλωσεις εισοδων και εξοδων για τα συστατικα της συνθεσης
+      port(
+         A: in std_logic_vector(2 downto 0);--δηλωση εισοδου 3 bit
+         even: out std_logic;--δηλωση εξοδου even
+         odd : out std_logic--δηλωση εξοδου odd
+      );
+   end component;
+   
+   --δηλωση τυπικων λογικων σηματων
+   signal input: std_logic_vector(2 downto 0);
+   signal output: std_logic;
+    signal odd: std_logic;
+begin
+  
+   uut: even_detector_xor
+      port map( A=>input, even=>output,odd=>odd );
+  
+  --εναρξη διεργασιας διανυσματων δοκιμης
+   process
+   begin
+      input <= "000";
+      wait for 100 ns;
+      input <= "001";
+      wait for 100 ns;
+      input <= "010";
+      wait for 100 ns;
+      input <= "011";
+      wait for 100 ns;
+      input <= "100";
+      wait for 100 ns;
+      input <= "101";
+      wait for 100 ns;
+      input <= "110";
+      wait for 100 ns;
+      input <= "111";
+      wait for 100 ns;
+   end process;
+      --εναρξη διεργασιας για τον ελεγχο των αποτελεσματων
+   process
+      variable error_status: boolean;
+   begin
+      wait on input;
+      wait for 100 ns;
+      if ((input="000" and output = '1') or
+          (input="001" and output = '0') or
+          (input="010" and output = '0') or
+          (input="011" and output = '1') or
+          (input="100" and output = '0') or
+          (input="101" and output = '1') or
+          (input="110" and output = '1') or
+          (input="111" and output = '0'))
+      then
+         error_status := false;
+      else
+         error_status := true;
+      end if;
+      --αναφορα σφαλματων 
+      assert not error_status
+         report "test failed."
+         severity note;
+   end process;
+end tb_arch;
+----------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------
+################################## ΑΝΙΧΝΕΥΤΗΣ ΣΦΑΛΜΑΤΩΝ #################################
+----------------------------------------------------------------------------------------
+
+
+ΤΑ ΣΥΓΚΕΚΡΙΜΕΝΑ ΚΥΚΛΩΜΑ ΜΠΟΡΟΥΝ ΝΑ ΧΡΗΣΙΜΟΠΟΙΗΘΟΥΝ ΩΣ ΑΝΙΧΝΕΥΤΕΣ ΣΦΑΛΜΑΤΩΝ ΩΣ ΕΞΗΣ:
+
+ΑΝ ΣΤΟΝ ΚΩΔΙΚΑ ΤΟΥ TEST BENCH ΑΛΛΑΞΟΥΜΕ, ΣΤΗΝ ΔΙΕΡΓΑΣΙΑ ΤΟΥ ΕΛΕΓΧΟΥ ΤΩΝ ΑΠΟΤΕΛΕΣΜΑΤΩΝ, ΜΙΑ Ή ΚΑΙ ΠΕΡΙΣΣΟΤΕΡΕΣ ΑΠΟ ΤΙΣ ΤΙΜΕΣ ΕΞΟΔΟΥ (OUTPUT), ΤΟΤΕ ΣΤΟ ΠΛΑΙΣΙΟ "CONSOLE" ΘΑ ΜΑΣ ΕΜΦΑΝΙΣΕΙ "NOTE:TEST FAILED" ΓΙΑ ΤΗΝ ΛΑΘΟΣ ΕΞΟΔΟ ΠΟΥ ΔΩΣΑΜΕ (ΔΙΟΤΙ ΠΡΟΚΕΙΤΑΙ ΓΙΑ ΤΟΝ ΠΙΝΑΚΑ ΑΛΗΘΕΙΑΣ ΜΕ OUTPUT TO EVEN).
+
+ΓΙΑ ΠΑΡΑΔΕΙΓΜΑ, ΣΤΟ ΠΑΡΑΚΑΤΩ ΣΤΙΓΜΙΟΤΥΠΟ ΒΛΕΠΟΥΜΕ ΤΟ TEST BENCH ΓΙΑ ΤΟΝ EVEN_DETECTOR_XOR ΚΑΙ ΣΤΟΝ ΚΩΔΙΚΑ ΤΟΥ TEST BENCH, ΓΙΑ ΤΟ INPUT=000 ΑΛΛΑΞΑΜΕ ΤΟ OUTPUT ΣΕ 0 ΑΝΤΙ ΓΙΑ OUTPUT=1 ΠΟΥ ΕΙΝΑΙ ΤΟ ΣΩΣΤΟ.
+ΕΠΕΙΤΑ, ΤΟ ΣΦΑΛΜΑ ΑΥΤΟ ΜΑΣ ΕΜΦΑΝΙΖΕΤΑΙ ΟΠΩΣ ΠΡΟΑΝΑΦΕΡΑΜΕ ΩΣ "NOTE:TEST FAILED".
+
+
